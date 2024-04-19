@@ -3,7 +3,9 @@ package solver.ls;
 import java.io.File;
 import java.io.FileNotFoundException;
 
+import java.util.HashSet;
 import java.util.Scanner;
+import java.util.Set;
 
 public class VRPInstance {
     // VRP Input Parameters
@@ -69,5 +71,57 @@ public class VRPInstance {
                 this.distance[i][j] = dist;
             }
         }
+    }
+
+    public boolean isSolutionFeasible(int[][] routes) {
+        // there should be some route for each vehicle
+        if (routes.length != numVehicles)
+            return false;
+
+        // each route should begin and end at the depot (and therefore, each route should have at least 2 locations)
+        for (int[] route : routes) {
+            if (route.length < 2)
+                return false;
+            if (route[0] != 0 || route[route.length - 1] != 0)
+                return false;
+        }
+
+        // every customer is visited exactly once
+        int[] visitedCustomers = new int[numCustomers]; // use array for membership tracking and checking -- faster than hashing with a set
+        for (int[] route : routes) {
+            for (int customer : route) {
+                if (customer != 0 && visitedCustomers[customer] == 1) // customer was visited more than once
+                    return false;
+                visitedCustomers[customer] = 1;
+            }
+        }
+        for (int customer = 1; customer < numCustomers; customer++) {
+            if (visitedCustomers[customer] == 0) // customer was not visited by any vehicle
+                return false;
+        }
+
+        // no vehicle should exceed its capacity
+        for (int[] route : routes) {
+            int capacityUsed = 0;
+            for (int customer : route) {
+                capacityUsed += demandOfCustomer[customer];
+                if (capacityUsed > vehicleCapacity)
+                    return false;
+            }
+        }
+
+        return true;
+    }
+
+    public double solutionTotalDistance(int[][] routes) {
+        double totalDistance = 0.0;
+        for (int[] route : routes) {
+            for (int customerIdx = 1; customerIdx < numCustomers; customerIdx++) {
+                int prevCustomer = route[customerIdx - 1];
+                int thisCustomer = route[customerIdx];
+                totalDistance += distance[prevCustomer][thisCustomer];
+            }
+        }
+        return totalDistance;
     }
 }
