@@ -2,6 +2,7 @@ package solver.ls;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
 
 public class Main {
     public static void main(String[] args) {
@@ -15,14 +16,21 @@ public class Main {
         String filename = path.getFileName().toString();
         System.out.println("Instance: " + input);
 
-        VRPGoogleSolver solver = new VRPGoogleSolver(input);
-
-        solver.solve();
-
         Timer watch = new Timer();
         watch.start();
-        VRPInstance instance = new VRPInstance(input);
+//        VRPInstance instance = new VRPInstance(input);
+//        VRPGoogleSolver solver = new VRPGoogleSolver(input);
+        VRPLocalSearch solver = new VRPLocalSearch(input);
+        Solution solution = solver.constructInitialSolution();
         watch.stop();
+
+        for (int i = 0; i < solver.numVehicles; i++) {
+            for (int custNum : solution.routes.get(i)) {
+                System.out.print(custNum + " ");
+            }
+            System.out.println();
+        }
+        System.out.println("total distance: " + solver.solutionTotalDistance(solution));
 
         System.out.println("{\"Instance\": \"" + filename +
                 "\", \"Time\": " + String.format("%.2f", watch.getTime()) +

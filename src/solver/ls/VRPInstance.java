@@ -2,6 +2,7 @@ package solver.ls;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.util.List;
 import java.util.Scanner;
 
 public class VRPInstance {
@@ -70,22 +71,22 @@ public class VRPInstance {
         }
     }
 
-    public boolean isSolutionFeasible(int[][] routes) {
+    public boolean isSolutionFeasible(Solution solution) {
         // there should be some route for each vehicle
-        if (routes.length != numVehicles)
+        if (solution.routes.size() != numVehicles)
             return false;
 
         // each route should begin and end at the depot (and therefore, each route should have at least 2 locations)
-        for (int[] route : routes) {
-            if (route.length < 2)
+        for (List<Integer> route : solution.routes) {
+            if (route.size() < 2)
                 return false;
-            if (route[0] != 0 || route[route.length - 1] != 0)
+            if (route.get(0) != 0 || route.get(route.size() - 1) != 0)
                 return false;
         }
 
         // every customer is visited exactly once
         int[] visitedCustomers = new int[numCustomers]; // use array for membership tracking and checking -- faster than hashing with a set
-        for (int[] route : routes) {
+        for (List<Integer> route : solution.routes) {
             for (int customer : route) {
                 if (customer != 0 && visitedCustomers[customer] == 1) // customer was visited more than once
                     return false;
@@ -98,7 +99,7 @@ public class VRPInstance {
         }
 
         // no vehicle should exceed its capacity
-        for (int[] route : routes) {
+        for (List<Integer> route : solution.routes) {
             int capacityUsed = 0;
             for (int customer : route) {
                 capacityUsed += demandOfCustomer[customer];
@@ -110,15 +111,16 @@ public class VRPInstance {
         return true;
     }
 
-    public double solutionTotalDistance(int[][] routes) {
+    public double solutionTotalDistance(Solution solution) {
         double totalDistance = 0.0;
-        for (int[] route : routes) {
-            for (int customerIdx = 1; customerIdx < numCustomers; customerIdx++) {
-                int prevCustomer = route[customerIdx - 1];
-                int thisCustomer = route[customerIdx];
+        for (List<Integer> route : solution.routes) {
+            for (int customerIdx = 1; customerIdx < route.size(); customerIdx++) {
+                int prevCustomer = route.get(customerIdx - 1);
+                int thisCustomer = route.get(customerIdx);
                 totalDistance += distance[prevCustomer][thisCustomer];
             }
         }
+        solution.totalDistance = totalDistance;
         return totalDistance;
     }
 }
