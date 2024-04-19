@@ -2,10 +2,7 @@ package solver.ls;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-
-import java.util.HashSet;
 import java.util.Scanner;
-import java.util.Set;
 
 public class VRPInstance {
     // VRP Input Parameters
