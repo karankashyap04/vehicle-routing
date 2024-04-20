@@ -26,8 +26,8 @@ public class VRPGoogleSolver extends VRPInstance {
     private static final Logger logger = Logger.getLogger(VRPGoogleSolver.class.getName());
     long[] vehicleCapacities;
 
-    public VRPGoogleSolver(String filename) {
-        super(filename);
+    public VRPGoogleSolver(String filename, Timer watch) {
+        super(filename, watch);
 
         this.vehicleCapacities = new long[this.numVehicles];
         for (int i = 0; i < this.numVehicles; i++) {
