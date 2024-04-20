@@ -1,8 +1,10 @@
 package solver.ls;
 
+import solver.ls.MovingStrategy.MovingStrategy;
+import solver.ls.MovingStrategy.RandomCustomerMovement;
+
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.List;
 
 public class Main {
     public static void main(String[] args) {
@@ -20,8 +22,10 @@ public class Main {
         watch.start();
 //        VRPInstance instance = new VRPInstance(input);
 //        VRPGoogleSolver solver = new VRPGoogleSolver(input);
-        VRPLocalSearch solver = new VRPLocalSearch(input);
-        Solution solution = solver.constructInitialSolution();
+
+        MovingStrategy movingStrategy = new RandomCustomerMovement();
+        VRPLocalSearch solver = new VRPLocalSearch(input, movingStrategy, watch);
+        Solution solution = solver.localSearch();
         watch.stop();
 
         for (int i = 0; i < solver.numVehicles; i++) {

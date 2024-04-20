@@ -15,8 +15,12 @@ public class VRPInstance {
     double[] yCoordOfCustomer;    // the y coordinate of each customer
     double[][] distance;        // distances between all customers (including warehouse)
 
+    Timer watch;
 
-    public VRPInstance(String fileName) {
+
+    public VRPInstance(String fileName, Timer watch) {
+        this.watch = watch;
+
         Scanner read = null;
         try {
             read = new Scanner(new File(fileName));
