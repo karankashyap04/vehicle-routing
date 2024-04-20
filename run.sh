@@ -12,4 +12,10 @@ fi
 	
 input=$1
 
-java -cp src solver.ls.Main $input
+# export the ilog license to run the solver
+export ILOG_LICENSE_FILE=/local/projects/cplex/ilm/current/linux/access.site.ilm
+
+# export the solver libraries into the path
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/local/projects/cplex/CPLEX_Studio2211/cpoptimizer/bin/x86-64_linux:/local/projects/cplex/CPLEX_Studio2211/cplex/bin/x86-64_linux
+
+java -cp /local/projects/cplex/CPLEX_Studio2211/cpoptimizer/lib/ILOG.CP.jar:src solver.ls.Main $input
