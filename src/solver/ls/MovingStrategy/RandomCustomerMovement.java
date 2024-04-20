@@ -16,7 +16,12 @@ public class RandomCustomerMovement implements MovingStrategy {
     private final Random random = new Random();
 
     private int pickRandomVehicle(Solution currentSolution) {
-        return random.nextInt(currentSolution.routes.size());
+        // need to ensure that the vehicle picked is serving at least 1 customer
+        int vehicleIdx;
+        do {
+            vehicleIdx = random.nextInt(currentSolution.routes.size());
+        } while (currentSolution.routes.get(vehicleIdx).size() <= 2);
+        return vehicleIdx;
     }
 
     private int pickRandomCustomerFromVehicleRoute(Solution currentSolution, int vehicleIdx) {
