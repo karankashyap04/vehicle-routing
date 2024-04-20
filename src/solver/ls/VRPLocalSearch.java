@@ -98,7 +98,6 @@ public class VRPLocalSearch extends VRPInstance {
         solutionTotalDistance(currentSolution); // compute solution total distance (stored in totalDistance field)
 
         // start moving around
-        // TODO: need to put this inside a while loop of some sort
         while (watch.getTime() < TIMEOUT) {
             Solution newSolution = move(currentSolution);
             if (newSolution.isFeasible && newSolution.totalDistance < incumbentSolution.totalDistance)
@@ -142,6 +141,12 @@ public class VRPLocalSearch extends VRPInstance {
                     bestNeighbor = neighbor;
             }
 
+            if (bestNeighbor == null) {
+                // TODO: we should do something better in this situation; this current situation will lead to it
+                //       repeatedly arriving at this same point (stuck in a local minima)
+                System.out.println("Couldn't move: no feasible neighbors!");
+                return incumbentSolution;
+            }
             return bestNeighbor;
         } catch (Exception e) {
             throw new RuntimeException(e);
