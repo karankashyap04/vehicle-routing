@@ -31,4 +31,16 @@ public class Solution {
         }
         return new Solution(copyRoutes, this.totalDistance, this.isFeasible);
     }
+
+    public String getSolutionString() {
+        StringBuilder result = new StringBuilder("0 "); // begin with 0 (since local search doesn't provide optimality guarantees)
+
+        for (List<Integer> route : this.routes) {
+            for (int location : route) {
+                result.append(location).append(" ");
+            }
+        }
+
+        return result.toString().trim(); // remove whitespace from the end
+    }
 }

@@ -34,11 +34,11 @@ public class Main {
             }
             System.out.println();
         }
-        System.out.println("total distance: " + solver.solutionTotalDistance(solution));
+        double totalDistance = solver.solutionTotalDistance(solution);
 
         System.out.println("{\"Instance\": \"" + filename +
                 "\", \"Time\": " + String.format("%.2f", watch.getTime()) +
-                ", \"Result\": \"--\"" +
-                ", \"Solution\": \"--\"}");
+                ", \"Result\": \"" + totalDistance + "\"" +
+                ", \"Solution\": \"" + solution.getSolutionString() + "\"}");
     }
 }
