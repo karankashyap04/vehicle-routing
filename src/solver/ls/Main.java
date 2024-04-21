@@ -36,9 +36,11 @@ public class Main {
         }
         double totalDistance = solver.solutionTotalDistance(solution);
 
+        // TODO: fix rounding for distance in result (round to 2dp)
+
         System.out.println("{\"Instance\": \"" + filename +
                 "\", \"Time\": " + String.format("%.2f", watch.getTime()) +
-                ", \"Result\": \"" + totalDistance + "\"" +
+                ", \"Result\": \"" + String.format("%.2f", totalDistance) + "\"" +
                 ", \"Solution\": \"" + solution.getSolutionString() + "\"}");
     }
 }
