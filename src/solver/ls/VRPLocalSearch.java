@@ -8,6 +8,7 @@ import solver.ls.MovingStrategy.MovingStrategy;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 import java.util.concurrent.*;
 
 public class VRPLocalSearch extends VRPInstance {
@@ -16,8 +17,11 @@ public class VRPLocalSearch extends VRPInstance {
     IloIntVar[][] customersServed; // (numVehicles, numCustomers - 1) --> (i, j): if vehicle i serves customer j
 
     Solution incumbentSolution;
+    private double lastIncumbentUpdateTime = 5.0;
+    private final double INCUMBENT_UPDATE_TIMEOUT = 5.0; // 5 seconds
+
     MovingStrategy movingStrategy;
-    final double TIMEOUT = 30.0; // stop running search after 295 seconds
+    final double TIMEOUT = 295.0; // stop running search after 295 seconds
 
     // reference: https://stackoverflow.com/questions/3269445/executorservice-how-to-wait-for-all-tasks-to-finish
     final int NUM_THREADS = 10;
@@ -26,6 +30,23 @@ public class VRPLocalSearch extends VRPInstance {
     public VRPLocalSearch(String filename, MovingStrategy movingStrategy, Timer watch) {
         super(filename, watch);
         this.movingStrategy = movingStrategy;
+    }
+
+    private Solution constructSolutionFromCPVars() {
+        List<List<Integer>> routes = new ArrayList<>();
+        for (int i = 0; i < numVehicles; i++) {
+            List<Integer> vehicleRoute = new ArrayList<>();
+            vehicleRoute.add(0);
+            for (int j = 1; j < numCustomers; j++) {
+                int isCustomerServed = (int) cp.getValue(customersServed[i][j]);
+                if (isCustomerServed == 1) {
+                    vehicleRoute.add(j);
+                }
+            }
+            vehicleRoute.add(0);
+            routes.add(vehicleRoute);
+        }
+        return new Solution(routes);
     }
 
     private Solution constructInitialSolution() {
@@ -54,21 +75,8 @@ public class VRPLocalSearch extends VRPInstance {
             }
 
             if (cp.solve()) {
-                List<List<Integer>> routes = new ArrayList<>();
-                for (int i = 0; i < numVehicles; i++) {
-                    List<Integer> vehicleRoute = new ArrayList<>();
-                    vehicleRoute.add(0);
-                    for (int j = 1; j < numCustomers; j++) {
-                        int isCustomerServed = (int) cp.getValue(customersServed[i][j]);
-                        if (isCustomerServed == 1) {
-                            vehicleRoute.add(j);
-                        }
-                    }
-                    vehicleRoute.add(0);
-                    routes.add(vehicleRoute);
-                }
-
-                incumbentSolution = new Solution(routes);
+                incumbentSolution = constructSolutionFromCPVars();
+                lastIncumbentUpdateTime = watch.getTime();
                 return incumbentSolution;
             } else {
                 System.out.println("Problem is infeasible!");
@@ -97,11 +105,38 @@ public class VRPLocalSearch extends VRPInstance {
 
         solutionTotalDistance(currentSolution); // compute solution total distance (stored in totalDistance field)
 
+        Random random = new Random();
         // start moving around
         while (watch.getTime() < TIMEOUT) {
+            if (watch.getTime() - lastIncumbentUpdateTime >= INCUMBENT_UPDATE_TIMEOUT) {
+                System.out.println("RESTART!!!!!!!!!!!!!!!!!!!!!!!!!");
+                boolean foundSolution = false;
+                try {
+                    cp.setParameter(IloCP.IntParam.RandomSeed, random.nextInt(1000000));
+                    foundSolution = cp.solve();
+//                    cp.startNewSearch();
+//                    foundSolution = cp.next();
+
+                } catch(IloException e) {
+                    System.out.println("unexpected failure from cp.next");
+                }
+                if (foundSolution) {
+                    currentSolution = constructSolutionFromCPVars();
+                    System.out.println(currentSolution.getSolutionString());
+                    solutionTotalDistance(currentSolution);
+                    if (currentSolution.totalDistance <= incumbentSolution.totalDistance)
+                        incumbentSolution = currentSolution;
+                    lastIncumbentUpdateTime = watch.getTime();
+                    continue;
+                }
+            }
+
             Solution newSolution = move(currentSolution);
-            if (newSolution.isFeasible && newSolution.totalDistance < incumbentSolution.totalDistance)
+            if (newSolution.isFeasible && newSolution.totalDistance < incumbentSolution.totalDistance) {
                 incumbentSolution = newSolution;
+                lastIncumbentUpdateTime = watch.getTime();
+            }
+
             currentSolution = newSolution;
         }
 

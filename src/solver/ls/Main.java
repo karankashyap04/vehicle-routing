@@ -24,7 +24,7 @@ public class Main {
 //        VRPInstance instance = new VRPInstance(input);
 //        VRPGoogleSolver solver = new VRPGoogleSolver(input);
 
-        MovingStrategy movingStrategy = new TwoOptWithCrossRouteCustomerMove();
+        MovingStrategy movingStrategy = new RandomCustomerMovement();
         VRPLocalSearch solver = new VRPLocalSearch(input, movingStrategy, watch);
         Solution solution = solver.localSearch();
         watch.stop();
