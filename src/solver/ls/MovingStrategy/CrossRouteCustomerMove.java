@@ -6,13 +6,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-/**
- * This approach picks a random customer to move. It then defines the neighborhood as
- * all possible places they could be moved to within their own route (change the order
- * in which they are visited within their route), and also moving them to other routes
- */
-public class RandomCustomerMovement implements MovingStrategy {
-
+// Randomly picks a customer. Moves them to every other possible route (in current
+// position) --> this is the entire neighborhood
+public class CrossRouteCustomerMove implements MovingStrategy {
     private final Random random = new Random();
 
     private int pickRandomVehicle(Solution currentSolution) {
@@ -61,20 +57,6 @@ public class RandomCustomerMovement implements MovingStrategy {
                         new ArrayList<>(List.of(newRoute.size() - 1))
                 );
             }
-            neighborhoodMoves.add(move);
-        }
-
-        // get neighbors by moving customer to other positions within current route
-        List<Integer> customerRoute = currentSolution.routes.get(sourceRouteIdx);
-        for (int otherCustomerIdx = 1; otherCustomerIdx < customerRoute.size() - 1; otherCustomerIdx++) {
-            if (otherCustomerIdx == customerSourceIdx) // don't want to swap to current location (does nothing)
-                continue;
-
-            Move move = new Move(
-                    new ArrayList<>(List.of(sourceRouteIdx)),
-                    new ArrayList<>(List.of(customerSourceIdx)),
-                    new ArrayList<>(List.of(sourceRouteIdx)),
-                    new ArrayList<>(List.of(otherCustomerIdx)));
             neighborhoodMoves.add(move);
         }
 

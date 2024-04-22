@@ -17,7 +17,7 @@ public class VRPLocalSearch extends VRPInstance {
 
     Solution incumbentSolution;
     MovingStrategy movingStrategy;
-    final double TIMEOUT = 295.0; // stop running search after 295 seconds
+    final double TIMEOUT = 30.0; // stop running search after 295 seconds
 
     // reference: https://stackoverflow.com/questions/3269445/executorservice-how-to-wait-for-all-tasks-to-finish
     final int NUM_THREADS = 10;
@@ -85,7 +85,7 @@ public class VRPLocalSearch extends VRPInstance {
      * Performs local search to try and find an optimal solution
      * (NOTE: since local search is an incomplete method, there is no guarantee of optimality)
      *
-     * @return Solution: the most optimal feasible solution found via local search
+     * @return a Solution: the most optimal feasible solution found via local search
      */
     public Solution localSearch() {
         // construct initial solution

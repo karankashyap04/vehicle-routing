@@ -7,7 +7,7 @@ import java.util.concurrent.Callable;
 public class MoveTask implements Callable<Solution> {
 
     private Solution solution;
-    private Move move;
+    private final Move move;
     private final VRPLocalSearch vrpLocalSearch;
 
     public MoveTask(Solution prevSolution, Move move, VRPLocalSearch vrpLocalSearch) {
@@ -21,10 +21,12 @@ public class MoveTask implements Callable<Solution> {
         // make a deep copy of the solution -- prevent issues when mutating (as we perform the move)
         solution = solution.copy();
 
-        // remove the customer from the old position
-        int customer = solution.routes.get(move.prevVehicle()).remove(move.prevCustomerRouteIdx());
-        // add the customer to the new position
-        solution.routes.get(move.nextVehicle()).add(move.nextCustomerRouteIdx(), customer);
+        for (int i = 0; i < move.prevVehicle().size(); i++) {
+            // remove the customer from the old position
+            int customer = solution.routes.get(move.prevVehicle().get(i)).remove((int)move.prevCustomerRouteIdx().get(i));
+            // add the customer to the new position
+            solution.routes.get(move.nextVehicle().get(i)).add(move.nextCustomerRouteIdx().get(i), customer);
+        }
 
         // compute feasibility and total distance
         solution.isFeasible = vrpLocalSearch.isSolutionFeasible(solution);

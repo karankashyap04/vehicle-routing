@@ -1,4 +1,6 @@
 package solver.ls.MovingStrategy;
 
-public record Move(int prevVehicle, int prevCustomerRouteIdx, int nextVehicle, int nextCustomerRouteIdx) {
+import java.util.List;
+
+public record Move(List<Integer> prevVehicle, List<Integer> prevCustomerRouteIdx, List<Integer> nextVehicle, List<Integer> nextCustomerRouteIdx) {
 }

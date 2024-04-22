@@ -46,3 +46,8 @@ TODO:
 - Set up CP solver
 - Solution class (to store solution)
 - Solution verification class (feasibility checker)
+
+
+## Local Search Exploration Ideas
+- Move random customer to all other positions in this route, and same position in other routes
+- 2-opt + random customer move: once we have a random customer move that succeeds in moving across routes, run 2-opt a bunch of times before allowing another cross-route movement

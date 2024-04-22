@@ -2,6 +2,7 @@ package solver.ls;
 
 import solver.ls.MovingStrategy.MovingStrategy;
 import solver.ls.MovingStrategy.RandomCustomerMovement;
+import solver.ls.MovingStrategy.TwoOptWithCrossRouteCustomerMove;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -23,7 +24,7 @@ public class Main {
 //        VRPInstance instance = new VRPInstance(input);
 //        VRPGoogleSolver solver = new VRPGoogleSolver(input);
 
-        MovingStrategy movingStrategy = new RandomCustomerMovement();
+        MovingStrategy movingStrategy = new TwoOptWithCrossRouteCustomerMove();
         VRPLocalSearch solver = new VRPLocalSearch(input, movingStrategy, watch);
         Solution solution = solver.localSearch();
         watch.stop();
