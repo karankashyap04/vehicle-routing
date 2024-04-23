@@ -3,8 +3,7 @@ package solver.ls;
 import ilog.concert.IloException;
 import ilog.cp.*;
 import ilog.concert.*;
-import solver.ls.MovingStrategy.Move;
-import solver.ls.MovingStrategy.MovingStrategy;
+import solver.ls.MovingStrategy.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,9 +26,22 @@ public class VRPLocalSearch extends VRPInstance {
     final int NUM_THREADS = 10;
     ExecutorService threadPool = Executors.newFixedThreadPool(NUM_THREADS);
 
+    /*
+     * if this flag is true, we get lists of moves from moving strategies.
+     * if it is false, we get single moves from the moving strategies in singleMovingStrategies
+     */
+    private final boolean MULTIPLE_MOVES_NEIGHBORHOOD = true;
+
+    private List<MovingStrategy> singleMovingStrategies;
+
     public VRPLocalSearch(String filename, MovingStrategy movingStrategy, Timer watch) {
         super(filename, watch);
         this.movingStrategy = movingStrategy;
+        if (!MULTIPLE_MOVES_NEIGHBORHOOD) {
+            this.singleMovingStrategies = new ArrayList<>(List.of(
+                    new TwoOpt(), new CrossRouteCustomerMove(), new RandomCustomerMovement()
+            ));
+        }
     }
 
     private Solution constructSolutionFromCPVars() {
@@ -104,6 +116,7 @@ public class VRPLocalSearch extends VRPInstance {
         }
 
         solutionTotalDistance(currentSolution); // compute solution total distance (stored in totalDistance field)
+        System.out.println("initial solution: " + currentSolution.totalDistance);
 
         Random random = new Random();
         // start moving around
@@ -124,8 +137,10 @@ public class VRPLocalSearch extends VRPInstance {
                     currentSolution = constructSolutionFromCPVars();
                     System.out.println(currentSolution.getSolutionString());
                     solutionTotalDistance(currentSolution);
-                    if (currentSolution.totalDistance <= incumbentSolution.totalDistance)
+                    if (currentSolution.totalDistance <= incumbentSolution.totalDistance) {
                         incumbentSolution = currentSolution;
+                        System.out.println("new incumbent (1): " + incumbentSolution.totalDistance);
+                    }
                     lastIncumbentUpdateTime = watch.getTime();
                     continue;
                 }
@@ -134,6 +149,7 @@ public class VRPLocalSearch extends VRPInstance {
             Solution newSolution = move(currentSolution);
             if (newSolution.isFeasible && newSolution.totalDistance < incumbentSolution.totalDistance) {
                 incumbentSolution = newSolution;
+                System.out.println("new incumbent (2): " + incumbentSolution.totalDistance);
                 lastIncumbentUpdateTime = watch.getTime();
             }
 
@@ -149,8 +165,17 @@ public class VRPLocalSearch extends VRPInstance {
      * @return new solution reached (after move)
      */
     private Solution move(Solution currentSolution) {
-        // based on moving strategy, get neighborhood
-        List<Move> neighborhoodMoves = this.movingStrategy.getNeighborhoodMoves(currentSolution);
+        List<Move> neighborhoodMoves;
+
+        if (MULTIPLE_MOVES_NEIGHBORHOOD) {
+            // based on moving strategy, get neighborhood
+            neighborhoodMoves = this.movingStrategy.getNeighborhoodMoves(currentSolution);
+        } else {
+            neighborhoodMoves = new ArrayList<>();
+            for (MovingStrategy strategy : this.singleMovingStrategies) {
+                neighborhoodMoves.add(strategy.getSingleNeighbor(currentSolution));
+            }
+        }
 
         // evaluate solutions in neighborhood
         List<Callable<Solution>> moveTasks = new ArrayList<>();

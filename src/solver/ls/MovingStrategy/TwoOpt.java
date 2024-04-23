@@ -67,4 +67,19 @@ public class TwoOpt implements MovingStrategy {
         }
         return neighborhoodMoves;
     }
+
+    /**
+     * Picks a random route, and performs a random two-opt swap within it
+     *
+     * @param currentSolution: the solution from which we are making the move
+     * @return the move that is made to get to the next solution
+     */
+    public Move getSingleNeighbor(Solution currentSolution) {
+        int routeIdx = random.nextInt(currentSolution.routes.size());
+        if (currentSolution.routes.get(routeIdx).size() < 4) {
+            List<Integer> emptyList = new ArrayList<>();
+            return new Move(emptyList, emptyList, emptyList, emptyList);
+        }
+        return getNeighborhoodMove(currentSolution.routes.get(routeIdx), routeIdx);
+    }
 }

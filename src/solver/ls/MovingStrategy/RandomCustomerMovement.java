@@ -80,4 +80,29 @@ public class RandomCustomerMovement implements MovingStrategy {
 
         return neighborhoodMoves;
     }
+
+    /**
+     * Picks a random customer, and moves them to a random position in some route
+     * (could be the same route in which they already were)
+     *
+     * @param currentSolution: the solution from which we are moving
+     * @return the move that is made to get to the next solution
+     */
+    public Move getSingleNeighbor(Solution currentSolution) {
+        // pick a random customer to move
+        int sourceRouteIdx = pickRandomVehicle(currentSolution);
+        int customerSourceIdx = pickRandomCustomerFromVehicleRoute(currentSolution, sourceRouteIdx);
+
+        // pick a new route to move them to
+        int destinationRouteIdx = random.nextInt(currentSolution.routes.size());
+        // pick a random position in the destination route to move them to
+        int customerDestinationIdx = 1 + random.nextInt(currentSolution.routes.get(destinationRouteIdx).size() - 1);
+
+        return new Move(
+                new ArrayList<>(List.of(sourceRouteIdx)),
+                new ArrayList<>(List.of(customerSourceIdx)),
+                new ArrayList<>(List.of(destinationRouteIdx)),
+                new ArrayList<>(List.of(customerDestinationIdx))
+        );
+    }
 }

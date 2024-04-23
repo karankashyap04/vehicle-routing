@@ -6,4 +6,6 @@ import java.util.List;
 
 public interface MovingStrategy {
     List<Move> getNeighborhoodMoves(Solution currentSolution);
+
+    Move getSingleNeighbor(Solution currentSolution);
 }
