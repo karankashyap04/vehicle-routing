@@ -9,7 +9,7 @@ import java.util.Random;
 // Randomly picks a customer. Moves them to every other possible route (in current
 // position) --> this is the entire neighborhood
 public class CrossRouteCustomerMove implements MovingStrategy {
-    private final Random random = new Random();
+    private final Random random = new Random(300000000);
 
     private int pickRandomVehicle(Solution currentSolution) {
         // need to ensure that the vehicle picked is serving at least 1 customer

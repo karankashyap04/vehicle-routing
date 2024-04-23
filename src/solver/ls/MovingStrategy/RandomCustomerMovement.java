@@ -13,7 +13,7 @@ import java.util.Random;
  */
 public class RandomCustomerMovement implements MovingStrategy {
 
-    private final Random random = new Random();
+    private final Random random = new Random(400000000);
 
     private int pickRandomVehicle(Solution currentSolution) {
         // need to ensure that the vehicle picked is serving at least 1 customer
