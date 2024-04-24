@@ -30,7 +30,7 @@ public class VRPLocalSearch extends VRPInstance {
      * if this flag is true, we get lists of moves from moving strategies.
      * if it is false, we get single moves from the moving strategies in singleMovingStrategies
      */
-    private final boolean MULTIPLE_MOVES_NEIGHBORHOOD = true;
+    private final boolean MULTIPLE_MOVES_NEIGHBORHOOD = false;
 
     private List<MovingStrategy> singleMovingStrategies;
 
@@ -39,7 +39,10 @@ public class VRPLocalSearch extends VRPInstance {
         this.movingStrategy = movingStrategy;
 //        if (!MULTIPLE_MOVES_NEIGHBORHOOD) {
         this.singleMovingStrategies = new ArrayList<>(List.of(
-                new TwoOpt(), new CrossRouteCustomerMove(), new RandomCustomerMovement(), new CrossRouteCustomerExchange()
+                new TwoOpt(),
+                new CrossRouteCustomerMove(),
+                new RandomCustomerMovement(),
+                new CrossRouteCustomerExchange()
         ));
 //        }
     }
@@ -119,35 +122,19 @@ public class VRPLocalSearch extends VRPInstance {
         System.out.println("initial solution: " + currentSolution.totalDistance);
 
         Random random = new Random(100000000);
+        double tolerance = Math.pow(10, Math.min(3, Double.toString(incumbentSolution.totalDistance).length() - 1));
+
         // start moving around
         while (watch.getTime() < TIMEOUT) {
             if (watch.getTime() - lastIncumbentUpdateTime >= INCUMBENT_UPDATE_TIMEOUT) {
                 System.out.println("RESTART!!!!!!!!!!!!!!!!!!!!!!!!!");
-                boolean foundSolution = false;
-                try {
-                    cp.setParameter(IloCP.IntParam.RandomSeed, random.nextInt(1000000));
-                    foundSolution = cp.solve();
-//                    cp.startNewSearch();
-//                    foundSolution = cp.next();
-
-                } catch(IloException e) {
-                    System.out.println("unexpected failure from cp.next");
-                }
-                if (foundSolution) {
-                    currentSolution = constructSolutionFromCPVars();
-                    System.out.println(currentSolution.getSolutionString());
-                    solutionTotalDistance(currentSolution);
-                    if (currentSolution.totalDistance <= incumbentSolution.totalDistance) {
-                        incumbentSolution = currentSolution;
-                        System.out.println("new incumbent (1): " + incumbentSolution.totalDistance);
-                    }
-                    lastIncumbentUpdateTime = watch.getTime();
-                    continue;
-                }
+                currentSolution = incumbentSolution;
+                lastIncumbentUpdateTime = watch.getTime();
+                tolerance = Math.max(tolerance / 2, 0.5);
             }
 
             Solution newSolution = move(currentSolution);
-            if (newSolution.isFeasible && newSolution.totalDistance < currentSolution.totalDistance + 0.5) {
+            if (newSolution.isFeasible && newSolution.totalDistance < currentSolution.totalDistance + tolerance) {
                 if (newSolution.totalDistance < incumbentSolution.totalDistance) {
                     incumbentSolution = newSolution;
                     System.out.println("new incumbent (2): " + incumbentSolution.totalDistance);
@@ -155,15 +142,6 @@ public class VRPLocalSearch extends VRPInstance {
                 }
                 currentSolution = newSolution;
             }
-
-//            Solution newSolution = move(currentSolution);
-//            if (newSolution.isFeasible && newSolution.totalDistance < incumbentSolution.totalDistance) {
-//                incumbentSolution = newSolution;
-//                System.out.println("new incumbent (2): " + incumbentSolution.totalDistance);
-//                lastIncumbentUpdateTime = watch.getTime();
-//            }
-//
-//            currentSolution = newSolution;
         }
 
         threadPool.shutdown();
@@ -198,13 +176,6 @@ public class VRPLocalSearch extends VRPInstance {
         try {
             List<Future<Solution>> evaluatedSolutions = threadPool.invokeAll(solutionEvaluationTasks);
 
-            // return "best" one
-            // - don't always have to return the best; maybe random walk with some probability
-            // - maybe only consider feasible solutions
-            // - maybe consider feasible and infeasible with some penalty
-            // - Serdar mentioned reading about local search "fitness"
-            // TODO: for now, just picking best feasible neighbor; this will definitely need to change, since it could
-            //       lead to a lot of issues (ex: what if there are no feasible moves from the current location, etc)
             Solution bestNeighbor = null;
             for (Future<Solution> futureNeighbor : evaluatedSolutions) {
                 Solution neighbor = futureNeighbor.get();
@@ -215,8 +186,6 @@ public class VRPLocalSearch extends VRPInstance {
             }
 
             if (bestNeighbor == null) {
-                // TODO: we should do something better in this situation; this current situation will lead to it
-                //       repeatedly arriving at this same point (stuck in a local minima)
                 System.out.println("Couldn't move: no feasible neighbors!");
                 return incumbentSolution;
             }
