@@ -123,14 +123,37 @@ public class VRPLocalSearch extends VRPInstance {
 
         Random random = new Random(100000000);
         double tolerance = Math.pow(10, Math.min(3, Double.toString(incumbentSolution.totalDistance).length() - 1));
+        int restartsSinceNewIncumbent = 0;
 
         // start moving around
         while (watch.getTime() < TIMEOUT) {
+            if (restartsSinceNewIncumbent >= 3) {
+                boolean foundSolution = false;
+                try {
+                    cp.setParameter(IloCP.IntParam.RandomSeed, random.nextInt(1000000));
+                    foundSolution = cp.solve();
+                } catch(IloException e) {
+                    System.out.println("unexpected failure from cp.next");
+                }
+                if (foundSolution) {
+                    currentSolution = constructSolutionFromCPVars();
+                    System.out.println(currentSolution.getSolutionString());
+                    solutionTotalDistance(currentSolution);
+                    if (currentSolution.totalDistance <= incumbentSolution.totalDistance) {
+                        incumbentSolution = currentSolution;
+                        System.out.println("new incumbent (1): " + incumbentSolution.totalDistance);
+                    }
+                    lastIncumbentUpdateTime = watch.getTime();
+                }
+                restartsSinceNewIncumbent = 0;
+            }
             if (watch.getTime() - lastIncumbentUpdateTime >= INCUMBENT_UPDATE_TIMEOUT) {
                 System.out.println("RESTART!!!!!!!!!!!!!!!!!!!!!!!!!");
                 currentSolution = incumbentSolution;
                 lastIncumbentUpdateTime = watch.getTime();
                 tolerance = Math.max(tolerance / 2, 0.5);
+                System.out.println("tolerance after restart: " + tolerance);
+                restartsSinceNewIncumbent++;
             }
 
             Solution newSolution = move(currentSolution);
@@ -139,6 +162,7 @@ public class VRPLocalSearch extends VRPInstance {
                     incumbentSolution = newSolution;
                     System.out.println("new incumbent (2): " + incumbentSolution.totalDistance);
                     lastIncumbentUpdateTime = watch.getTime();
+                    restartsSinceNewIncumbent = 0;
                 }
                 currentSolution = newSolution;
             }
