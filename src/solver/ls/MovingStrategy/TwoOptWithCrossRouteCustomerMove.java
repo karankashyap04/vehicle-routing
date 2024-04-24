@@ -16,20 +16,20 @@ public class TwoOptWithCrossRouteCustomerMove implements MovingStrategy {
         this.twoOpt = new TwoOpt();
     }
 
-    public List<Move> getNeighborhoodMoves(Solution currentSolution) {
+    public List<Solution> getNeighborhood(Solution currentSolution) {
         if (countSinceLastCrossMove < TWO_OPT_BETWEEN_CROSS_MOVE_COUNT) {
             // do a two-opt
             countSinceLastCrossMove++;
-            return twoOpt.getNeighborhoodMoves(currentSolution);
+            return twoOpt.getNeighborhood(currentSolution);
         }
         else {
             // do cross route move
             countSinceLastCrossMove = 0;
-            return crossRouteCustomerMove.getNeighborhoodMoves(currentSolution);
+            return crossRouteCustomerMove.getNeighborhood(currentSolution);
         }
     }
 
-    public Move getSingleNeighbor(Solution currentSolution) {
+    public Solution getSingleNeighbor(Solution currentSolution) {
         if (countSinceLastCrossMove < TWO_OPT_BETWEEN_CROSS_MOVE_COUNT) {
             // do a two-opt
             countSinceLastCrossMove++;

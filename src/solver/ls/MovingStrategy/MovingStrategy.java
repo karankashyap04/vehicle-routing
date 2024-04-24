@@ -5,7 +5,7 @@ import solver.ls.Solution;
 import java.util.List;
 
 public interface MovingStrategy {
-    List<Move> getNeighborhoodMoves(Solution currentSolution);
+    List<Solution> getNeighborhood(Solution currentSolution);
 
-    Move getSingleNeighbor(Solution currentSolution);
+    Solution getSingleNeighbor(Solution currentSolution);
 }

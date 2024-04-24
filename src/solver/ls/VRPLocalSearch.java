@@ -30,7 +30,7 @@ public class VRPLocalSearch extends VRPInstance {
      * if this flag is true, we get lists of moves from moving strategies.
      * if it is false, we get single moves from the moving strategies in singleMovingStrategies
      */
-    private final boolean MULTIPLE_MOVES_NEIGHBORHOOD = false;
+    private final boolean MULTIPLE_MOVES_NEIGHBORHOOD = true;
 
     private List<MovingStrategy> singleMovingStrategies;
 
@@ -175,28 +175,28 @@ public class VRPLocalSearch extends VRPInstance {
      * @return new solution reached (after move)
      */
     private Solution move(Solution currentSolution) {
-        List<Move> neighborhoodMoves = new ArrayList<>();
+        List<Solution> neighborhood = new ArrayList<>();
 
         if (MULTIPLE_MOVES_NEIGHBORHOOD) {
             // based on moving strategy, get neighborhood
 //            neighborhoodMoves = this.movingStrategy.getNeighborhoodMoves(currentSolution);
             for (MovingStrategy strategy : this.singleMovingStrategies) {
-                neighborhoodMoves.addAll(strategy.getNeighborhoodMoves(currentSolution));
+                neighborhood.addAll(strategy.getNeighborhood(currentSolution));
             }
         } else {
 //            neighborhoodMoves = new ArrayList<>();
             for (MovingStrategy strategy : this.singleMovingStrategies) {
-                neighborhoodMoves.add(strategy.getSingleNeighbor(currentSolution));
+                neighborhood.add(strategy.getSingleNeighbor(currentSolution));
             }
         }
 
         // evaluate solutions in neighborhood
-        List<Callable<Solution>> moveTasks = new ArrayList<>();
-        for (Move neighborhoodMove : neighborhoodMoves) {
-            moveTasks.add(new MoveTask(currentSolution, neighborhoodMove, this));
+        List<Callable<Solution>> solutionEvaluationTasks = new ArrayList<>();
+        for (Solution candidateSolution : neighborhood) {
+            solutionEvaluationTasks.add(new SolutionEvaluationTask(candidateSolution, this));
         }
         try {
-            List<Future<Solution>> neighborhood = threadPool.invokeAll(moveTasks);
+            List<Future<Solution>> evaluatedSolutions = threadPool.invokeAll(solutionEvaluationTasks);
 
             // return "best" one
             // - don't always have to return the best; maybe random walk with some probability
@@ -206,7 +206,7 @@ public class VRPLocalSearch extends VRPInstance {
             // TODO: for now, just picking best feasible neighbor; this will definitely need to change, since it could
             //       lead to a lot of issues (ex: what if there are no feasible moves from the current location, etc)
             Solution bestNeighbor = null;
-            for (Future<Solution> futureNeighbor : neighborhood) {
+            for (Future<Solution> futureNeighbor : evaluatedSolutions) {
                 Solution neighbor = futureNeighbor.get();
                 if (!neighbor.isFeasible)
                     continue;

@@ -27,65 +27,60 @@ public class CrossRouteCustomerMove implements MovingStrategy {
         return 1 + random.nextInt(currentSolution.routes.get(vehicleIdx).size() - 2);
     }
 
-    public List<Move> getNeighborhoodMoves(Solution currentSolution) {
+    public List<Solution> getNeighborhood(Solution currentSolution) {
         // pick a random customer to move
         int sourceRouteIdx = pickRandomVehicle(currentSolution);
+        if (currentSolution.routes.get(sourceRouteIdx).size() <= 2)
+            return new ArrayList<>();
         int customerSourceIdx = pickRandomCustomerFromVehicleRoute(currentSolution, sourceRouteIdx);
+        int customer = currentSolution.routes.get(sourceRouteIdx).get(customerSourceIdx);
 
-        List<Move> neighborhoodMoves = new ArrayList<>();
+        List<Solution> neighborhood = new ArrayList<>();
 
         // get neighbors by moving customer to other routes (in same position in route, if possible)
         for (int newRouteIdx = 0; newRouteIdx < currentSolution.routes.size(); newRouteIdx++) {
             if (newRouteIdx == sourceRouteIdx)
                 continue;
 
-            List<Integer> newRoute = currentSolution.routes.get(newRouteIdx);
-            Move move;
-            if (newRoute.size() > customerSourceIdx) { // can add customer into same index in new route
-                //           without the risk of putting it after the vehicle has returned to the depot
-                move = new Move(
-                        new ArrayList<>(List.of(sourceRouteIdx)),
-                        new ArrayList<>(List.of(customerSourceIdx)),
-                        new ArrayList<>(List.of(newRouteIdx)),
-                        new ArrayList<>(List.of(customerSourceIdx))
-                );
-            } else { // add it to the end of the list (but before the vehicle returns to the depot
-                move = new Move(
-                        new ArrayList<>(List.of(sourceRouteIdx)),
-                        new ArrayList<>(List.of(customerSourceIdx)),
-                        new ArrayList<>(List.of(newRouteIdx)),
-                        new ArrayList<>(List.of(newRoute.size() - 1))
-                );
-            }
-            neighborhoodMoves.add(move);
+            List<Integer> destinationRoute = currentSolution.routes.get(newRouteIdx);
+            int customerDestinationIdx = 1 + random.nextInt(destinationRoute.size() - 1);
+
+            Solution newSolution = currentSolution.copy();
+            newSolution.routes.get(newRouteIdx).add(customerDestinationIdx, customer);
+            newSolution.routes.get(sourceRouteIdx).remove(customerSourceIdx);
+            neighborhood.add(newSolution);
         }
 
-        return neighborhoodMoves;
+        return neighborhood;
     }
 
     /**
      * Picks a random customer, and moves them to a random position in a random (different) route
      *
      * @param currentSolution: the solution from which we are moving
-     * @return the move that is made to get to the next solution
+     * @return the (candidate) solution obtained after moving a single customer
      */
-    public Move getSingleNeighbor(Solution currentSolution) {
+    public Solution getSingleNeighbor(Solution currentSolution) {
+        Solution newSolution = currentSolution.copy();
+
         // pick a random customer to move
         int sourceRouteIdx = pickRandomVehicle(currentSolution);
+        if (currentSolution.routes.get(sourceRouteIdx).size() <= 2)
+            return newSolution;
         int customerSourceIdx = pickRandomCustomerFromVehicleRoute(currentSolution, sourceRouteIdx);
 
         // pick a new route to move them to
-        int destinationRouteIdx = sourceRouteIdx;
-        while (destinationRouteIdx == sourceRouteIdx)
-            destinationRouteIdx = random.nextInt(currentSolution.routes.size());
+        int destinationRouteIdx = random.nextInt(currentSolution.routes.size());
+        if (destinationRouteIdx == sourceRouteIdx)
+            return newSolution;
         // pick a random position in the route to move them to
         int customerDestinationIdx = 1 + random.nextInt(currentSolution.routes.get(destinationRouteIdx).size() - 1);
 
-        return new Move(
-                new ArrayList<>(List.of(sourceRouteIdx)),
-                new ArrayList<>(List.of(customerSourceIdx)),
-                new ArrayList<>(List.of(destinationRouteIdx)),
-                new ArrayList<>(List.of(customerDestinationIdx))
-        );
+        // update the new solution
+        int customer = currentSolution.routes.get(sourceRouteIdx).get(customerSourceIdx);
+        newSolution.routes.get(destinationRouteIdx).add(customerDestinationIdx, customer);
+        newSolution.routes.get(sourceRouteIdx).remove(customerSourceIdx);
+
+        return newSolution;
     }
 }

@@ -25,8 +25,14 @@ public class TwoOpt implements MovingStrategy {
         return 1 + random.nextInt(route.size() - 2);
     }
 
-    private Move getNeighborhoodMove(List<Integer> route, int routeIdx) {
-        // pick two different customers
+    private Solution performTwoOpt(Solution currentSolution, int routeIdx) {
+        Solution newSolution = currentSolution.copy();
+        List<Integer> route = currentSolution.routes.get(routeIdx);
+
+        if (route.size() < 4)
+            return newSolution;
+
+        // pick 2 different customers
         int custIdx1 = 0;
         int custIdx2 = 0;
         while (custIdx1 == custIdx2) {
@@ -38,34 +44,23 @@ public class TwoOpt implements MovingStrategy {
         int startCustomerIdx = min(custIdx1, custIdx2);
         int endCustomerIdx = max(custIdx1, custIdx2);
 
-        // generate a Move to represent this:
-        List<Integer> prevVehicle = new ArrayList<>();
-        List<Integer> prevCustomerRouteIdx = new ArrayList<>();
-        List<Integer> nextVehicle = new ArrayList<>();
-        List<Integer> nextCustomerRouteIdx = new ArrayList<>();
-
-
         for (int i = startCustomerIdx; i <= endCustomerIdx; i++) {
-            prevVehicle.add(routeIdx);
-            nextVehicle.add(routeIdx);
-
-            prevCustomerRouteIdx.add(i);
-            nextCustomerRouteIdx.add(endCustomerIdx - (i - startCustomerIdx));
+            int toSwapCustomer = route.get(endCustomerIdx - (i - startCustomerIdx));
+            newSolution.routes.get(routeIdx).set(i, toSwapCustomer);
         }
 
-        return new Move(prevVehicle, prevCustomerRouteIdx, nextVehicle, nextCustomerRouteIdx);
+        return newSolution;
     }
 
-    public List<Move> getNeighborhoodMoves(Solution currentSolution) {
-        // run once on each route
-        List<Move> neighborhoodMoves = new ArrayList<>();
+    public List<Solution> getNeighborhood(Solution currentSolution) {
+        // run two-opt once on each route
+        List<Solution> neighborhood = new ArrayList<>();
         for (int i = 0; i < currentSolution.routes.size(); i++) {
-            List<Integer> route = currentSolution.routes.get(i);
-            if (route.size() < 4)
+            if (currentSolution.routes.get(i).size() < 4)
                 continue;
-            neighborhoodMoves.add(getNeighborhoodMove(route, i));
+            neighborhood.add(performTwoOpt(currentSolution, i));
         }
-        return neighborhoodMoves;
+        return neighborhood;
     }
 
     /**
@@ -74,12 +69,8 @@ public class TwoOpt implements MovingStrategy {
      * @param currentSolution: the solution from which we are making the move
      * @return the move that is made to get to the next solution
      */
-    public Move getSingleNeighbor(Solution currentSolution) {
+    public Solution getSingleNeighbor(Solution currentSolution) {
         int routeIdx = random.nextInt(currentSolution.routes.size());
-        if (currentSolution.routes.get(routeIdx).size() < 4) {
-            List<Integer> emptyList = new ArrayList<>();
-            return new Move(emptyList, emptyList, emptyList, emptyList);
-        }
-        return getNeighborhoodMove(currentSolution.routes.get(routeIdx), routeIdx);
+        return performTwoOpt(currentSolution, routeIdx);
     }
 }
