@@ -186,7 +186,7 @@ public class VRPLocalSearch extends VRPInstance {
             // based on moving strategy, get neighborhood
 //            neighborhoodMoves = this.movingStrategy.getNeighborhoodMoves(currentSolution);
             for (MovingStrategy strategy : this.singleMovingStrategies) {
-                neighborhood.addAll(strategy.getNeighborhood(currentSolution));
+//                neighborhood.addAll(strategy.getNeighborhood(currentSolution));
                 for (int i = 0; i < 10; i++)
                     neighborhood.add(strategy.getSingleNeighbor(currentSolution));
             }
