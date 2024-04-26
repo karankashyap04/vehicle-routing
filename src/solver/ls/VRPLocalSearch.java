@@ -23,9 +23,6 @@ public class VRPLocalSearch extends VRPInstance {
     final double TIMEOUT = 295.0; // stop running search after 295 seconds
 
     // reference: https://stackoverflow.com/questions/3269445/executorservice-how-to-wait-for-all-tasks-to-finish
-    final int NUM_THREADS = 10;
-    ExecutorService threadPool = Executors.newFixedThreadPool(NUM_THREADS);
-
     /*
      * if this flag is true, we get lists of moves from moving strategies.
      * if it is false, we get single moves from the moving strategies in singleMovingStrategies
@@ -42,8 +39,7 @@ public class VRPLocalSearch extends VRPInstance {
                 new TwoOpt(),
                 new CrossRouteCustomerMove(),
                 new RandomCustomerMovement(),
-                new CrossRouteCustomerExchange(),
-                new CrossRouteArcExchange()
+                new CrossRouteCustomerExchange()
         ));
 //        }
     }
@@ -171,7 +167,6 @@ public class VRPLocalSearch extends VRPInstance {
             }
         }
 
-        threadPool.shutdown();
         return incumbentSolution;
     }
 
