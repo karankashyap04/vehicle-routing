@@ -42,7 +42,8 @@ public class VRPLocalSearch extends VRPInstance {
                 new TwoOpt(),
                 new CrossRouteCustomerMove(),
                 new RandomCustomerMovement(),
-                new CrossRouteCustomerExchange()
+                new CrossRouteCustomerExchange(),
+                new CrossRouteArcExchange()
         ));
 //        }
     }
