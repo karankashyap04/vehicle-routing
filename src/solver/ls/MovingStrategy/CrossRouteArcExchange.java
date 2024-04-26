@@ -1,6 +1,7 @@
 package solver.ls.MovingStrategy;
 
 import solver.ls.Solution;
+import solver.ls.VRPLocalSearch;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,16 +16,16 @@ public class CrossRouteArcExchange implements MovingStrategy {
     private final Random random = new Random(600000000);
     private final static List<Integer> emptyList = new ArrayList<>();
 
-    public List<Solution> getNeighborhood(Solution currentSolution) {
+    public List<Solution> getNeighborhood(Solution currentSolution, VRPLocalSearch instance) {
         final int NEIGHBORHOOD_SIZE = currentSolution.routes.size() / 2;
 
         List<Solution> neighborhoodMoves = new ArrayList<>();
         for (int i = 0; i < NEIGHBORHOOD_SIZE; i++)
-            neighborhoodMoves.add(getSingleNeighbor(currentSolution));
+            neighborhoodMoves.add(getSingleNeighbor(currentSolution, instance));
         return neighborhoodMoves;
     }
 
-    public Solution getSingleNeighbor(Solution currentSolution) {
+    public Solution getSingleNeighbor(Solution currentSolution, VRPLocalSearch instance) {
         Solution newSolution = currentSolution.copy();
         int numVehicles = currentSolution.routes.size();
         // pick the two routes
@@ -54,6 +55,17 @@ public class CrossRouteArcExchange implements MovingStrategy {
             newRoute1.add(newRoute1.size() - 1, route2.get(i));
         for (int i = route1Start; i < route1.size() - 1; i++)
             newRoute2.add(newRoute2.size() - 1, route1.get(i));
+
+        // run verification -- we only need to check that the two routes that were changed are still valid
+        newSolution.isFeasible = this.isRouteFeasible(newRoute1, instance) && this.isRouteFeasible(newRoute2, instance);
+        if (!newSolution.isFeasible) {
+            // no need to update total distance here -- we only consider feasible solutions so this will be discarded
+            return newSolution;
+        }
+
+        // compute new total distance -- we can compute this by seeing the change in distance for the two
+        // modified routes
+        newSolution.totalDistance += this.routeDistanceChange(route1, newRoute1, instance) + this.routeDistanceChange(route2, newRoute2, instance);
 
         return newSolution;
     }

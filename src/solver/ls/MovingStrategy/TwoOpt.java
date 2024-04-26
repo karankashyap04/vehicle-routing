@@ -1,6 +1,7 @@
 package solver.ls.MovingStrategy;
 
 import solver.ls.Solution;
+import solver.ls.VRPLocalSearch;
 
 import java.sql.Array;
 import java.util.ArrayList;
@@ -52,15 +53,17 @@ public class TwoOpt implements MovingStrategy {
         return newSolution;
     }
 
-    public List<Solution> getNeighborhood(Solution currentSolution) {
-        // run two-opt once on each route
-        List<Solution> neighborhood = new ArrayList<>();
-        for (int i = 0; i < currentSolution.routes.size(); i++) {
-            if (currentSolution.routes.get(i).size() < 4)
-                continue;
-            neighborhood.add(performTwoOpt(currentSolution, i));
-        }
-        return neighborhood;
+    public List<Solution> getNeighborhood(Solution currentSolution, VRPLocalSearch instance) {
+        // TODO: this needs to be fixed (wasn't fixed while removing multithreading)
+//        // run two-opt once on each route
+//        List<Solution> neighborhood = new ArrayList<>();
+//        for (int i = 0; i < currentSolution.routes.size(); i++) {
+//            if (currentSolution.routes.get(i).size() < 4)
+//                continue;
+//            neighborhood.add(performTwoOpt(currentSolution, i));
+//        }
+//        return neighborhood;
+        return new ArrayList<>();
     }
 
     /**
@@ -69,8 +72,23 @@ public class TwoOpt implements MovingStrategy {
      * @param currentSolution: the solution from which we are making the move
      * @return the move that is made to get to the next solution
      */
-    public Solution getSingleNeighbor(Solution currentSolution) {
+    public Solution getSingleNeighbor(Solution currentSolution, VRPLocalSearch instance) {
         int routeIdx = random.nextInt(currentSolution.routes.size());
-        return performTwoOpt(currentSolution, routeIdx);
+        Solution newSolution = performTwoOpt(currentSolution, routeIdx);
+
+        // run verification -- we only need to check that the two routes that were changed are still valid
+        List<Integer> newRoute = newSolution.routes.get(routeIdx);
+        newSolution.isFeasible = this.isRouteFeasible(newRoute, instance);
+        if (!newSolution.isFeasible) {
+            // no need to update total distance here -- we only consider feasible solutions so this will be discarded
+            return newSolution;
+        }
+
+        // compute new total distance -- we can compute this by seeing the change in distance for the two
+        // modified routes
+        List<Integer> oldRoute = currentSolution.routes.get(routeIdx);
+        newSolution.totalDistance += this.routeDistanceChange(oldRoute, newRoute, instance);
+
+        return newSolution;
     }
 }
