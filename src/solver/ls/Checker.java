@@ -102,8 +102,9 @@ public class Checker {
 
             String solutionString = splitLine[3].substring(splitLine[3].indexOf(":") + 3, splitLine[3].length() - 2);
             String[] solutionArray = solutionString.split(" ");
-            List<List<Integer>> routes = new ArrayList<>();
+            int flag = Integer.parseInt(solutionArray[0]);
 
+            List<List<Integer>> routes = new ArrayList<>();
             boolean routeStarted = false;
             for (int i = 1; i < solutionArray.length; i++) {
                 int customer = Integer.parseInt(solutionArray[i]);
@@ -120,6 +121,9 @@ public class Checker {
             }
 
             Solution solution = new Solution (routes);
+
+            String solFilename = "solutions/" + filename.substring(filename.indexOf("/") + 1) + ".sol";
+            SolutionFileGenerator.generate(solution, computedDistance, flag, solFilename);
 
             Timer watch = new Timer();
             VRPInstance instance = new VRPInstance(filename, watch);

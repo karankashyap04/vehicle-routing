@@ -51,6 +51,14 @@ public class VRPInstance {
             System.out.println(demandOfCustomer[i] + " " + xCoordOfCustomer[i] + " " + yCoordOfCustomer[i]);
 
         this.generateDistanceMatrix();
+
+        System.out.println("\n Matrix:\n");
+        for (int i = 0; i < numCustomers; i++) {
+            for (int j = 0; j < numCustomers; j++) {
+                System.out.print(this.distance[i][j] + " ");
+            }
+            System.out.println();
+        }
     }
 
     public int getNumCustomers() {
