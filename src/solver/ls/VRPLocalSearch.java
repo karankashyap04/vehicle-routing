@@ -120,32 +120,19 @@ public class VRPLocalSearch extends VRPInstance {
 
         Random random = new Random(100000000);
         double tolerance = Math.pow(10, Math.min(3, Double.toString(incumbentSolution.totalDistance).length() - 1));
-        int restartsSinceMinTolerance = 0;
-        boolean bruteForcedBefore = false;
-        double lastToleranceUpdateTime = watch.getTime();
+//        int restartsSinceNewIncumbent = 0;
 
         // start moving around
         while (watch.getTime() < TIMEOUT) {
-            if ((!bruteForcedBefore && restartsSinceMinTolerance >= 4) || (bruteForcedBefore && restartsSinceMinTolerance >= 2)) {
-                // brute force some routes
-                incumbentSolution = this.bruteForceRoutes(incumbentSolution);
-                currentSolution = incumbentSolution;
-                lastIncumbentUpdateTime = watch.getTime();
-
-                restartsSinceMinTolerance = 0;
-                bruteForcedBefore = true;
-            }
             if (tolerance < 10)
                 MULTIPLE_MOVES_NEIGHBORHOOD = true;
-            if (watch.getTime() - lastIncumbentUpdateTime >= INCUMBENT_UPDATE_TIMEOUT || watch.getTime() - lastToleranceUpdateTime >= 30) {
+            if (watch.getTime() - lastIncumbentUpdateTime >= INCUMBENT_UPDATE_TIMEOUT) {
                 System.out.println("RESTART!!!!!!!!!!!!!!!!!!!!!!!!!");
                 currentSolution = incumbentSolution;
                 lastIncumbentUpdateTime = watch.getTime();
                 tolerance = Math.max(tolerance / 2, 0.5);
                 System.out.println("tolerance after restart: " + tolerance);
-                lastToleranceUpdateTime = watch.getTime();
-                if (tolerance == 0.5)
-                    restartsSinceMinTolerance++;
+//                restartsSinceNewIncumbent++;
             }
 
             Solution newSolution = move(currentSolution);
@@ -155,104 +142,12 @@ public class VRPLocalSearch extends VRPInstance {
                     System.out.println("new incumbent (2): " + incumbentSolution.totalDistance);
                     lastIncumbentUpdateTime = watch.getTime();
 //                    restartsSinceNewIncumbent = 0;
-                    restartsSinceMinTolerance = 0;
                 }
                 currentSolution = newSolution;
             }
         }
 
         return incumbentSolution;
-    }
-
-    private void swap(int[] elements, int index1, int index2) {
-        int temp = elements[index1];
-        elements[index1] = elements[index2];
-        elements[index2] = temp;
-    }
-
-    private double checkDistance(int[] elements) {
-        double routeDistance = 0.0;
-        for (int i = 0; i < elements.length; i++) {
-            if (i == 0) {
-                int customer = elements[i];
-                routeDistance += this.distance[0][customer];
-            } else {
-                int thisCustomer = elements[i];
-                int prevCustomer = elements[i-1];
-                routeDistance += this.distance[prevCustomer][thisCustomer];
-            }
-        }
-        routeDistance += this.distance[elements[elements.length - 1]][0];
-        return routeDistance;
-    }
-
-    // brute forces short routes -- essentially brute forcing TSP
-    private Solution bruteForceRoutes(Solution currentSolution) {
-        System.out.println("brute force short routes");
-        for (int routeIdx = 0; routeIdx < currentSolution.routes.size(); routeIdx++) {
-            List<Integer> oldRoute = currentSolution.routes.get(routeIdx);
-
-            // if size <= 4 -> no room for improvement
-            // if size > 10 -> brute force will take too long
-            if (oldRoute.size() <= 4 || oldRoute.size() > 10)
-                continue;
-
-            // compute distance of old route
-            double oldRouteDistance = 0;
-            for (int i = 1; i < oldRoute.size(); i++) {
-                int thisCustomer = oldRoute.get(i);
-                int prevCustomer = oldRoute.get(i-1);
-                oldRouteDistance += this.distance[prevCustomer][thisCustomer];
-            }
-
-            // printing
-            System.out.println("old route:");
-            for (int customer : oldRoute) {
-                System.out.print(customer + " -> ");
-            }
-
-            // generate all permutations of customers in route (reference: https://www.baeldung.com/java-array-permutations)
-            int[] elements = new int[oldRoute.size() - 2]; // don't include 0s here
-            for (int i = 1; i < oldRoute.size() - 1; i++) {
-                elements[i-1] = oldRoute.get(i);
-            }
-
-            int[] indexes = new int[elements.length];
-
-            int i = 0;
-            while (i < indexes.length) {
-                if (indexes[i] < i) {
-                    swap(elements, i % 2 == 0 ?  0: indexes[i], i);
-                    double permutationDistance = checkDistance(elements);
-                    if (permutationDistance < oldRouteDistance) {
-                        System.out.println("better solution found");
-                        Solution newSolution = currentSolution.copy();
-                        List<Integer> route = newSolution.routes.get(routeIdx);
-                        for (int customerIdx = 1; customerIdx < route.size() - 1; customerIdx++) {
-                            route.set(customerIdx, elements[customerIdx-1]);
-                        }
-                        newSolution.totalDistance += (permutationDistance - oldRouteDistance);
-                        System.out.println("new incumbent: " + newSolution.totalDistance);
-
-                        // printing
-                        System.out.println("new route:");
-                        for (int customer : route) {
-                            System.out.print(customer + " -> ");
-                        }
-
-                        return newSolution;
-                    }
-                    indexes[i]++;
-                    i = 0;
-                }
-                else {
-                    indexes[i] = 0;
-                    i++;
-                }
-            }
-        }
-
-        return currentSolution;
     }
 
     /**
