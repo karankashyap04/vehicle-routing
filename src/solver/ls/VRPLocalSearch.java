@@ -126,26 +126,6 @@ public class VRPLocalSearch extends VRPInstance {
         while (watch.getTime() < TIMEOUT) {
             if (tolerance < 10)
                 MULTIPLE_MOVES_NEIGHBORHOOD = true;
-//            if (restartsSinceNewIncumbent >= 3) {
-//                boolean foundSolution = false;
-//                try {
-//                    cp.setParameter(IloCP.IntParam.RandomSeed, random.nextInt(1000000));
-//                    foundSolution = cp.solve();
-//                } catch(IloException e) {
-//                    System.out.println("unexpected failure from cp.next");
-//                }
-//                if (foundSolution) {
-//                    currentSolution = constructSolutionFromCPVars();
-//                    System.out.println(currentSolution.getSolutionString());
-//                    solutionTotalDistance(currentSolution);
-//                    if (currentSolution.totalDistance <= incumbentSolution.totalDistance) {
-//                        incumbentSolution = currentSolution;
-//                        System.out.println("new incumbent (1): " + incumbentSolution.totalDistance);
-//                    }
-//                    lastIncumbentUpdateTime = watch.getTime();
-//                }
-//                restartsSinceNewIncumbent = 0;
-//            }
             if (watch.getTime() - lastIncumbentUpdateTime >= INCUMBENT_UPDATE_TIMEOUT) {
                 System.out.println("RESTART!!!!!!!!!!!!!!!!!!!!!!!!!");
                 currentSolution = incumbentSolution;
@@ -192,31 +172,6 @@ public class VRPLocalSearch extends VRPInstance {
             }
         }
 
-//        // evaluate solutions in neighborhood
-//        List<Callable<Solution>> solutionEvaluationTasks = new ArrayList<>();
-//        for (Solution candidateSolution : neighborhood) {
-//            solutionEvaluationTasks.add(new SolutionEvaluationTask(candidateSolution, this));
-//        }
-//        try {
-//            List<Future<Solution>> evaluatedSolutions = threadPool.invokeAll(solutionEvaluationTasks);
-//
-//            Solution bestNeighbor = null;
-//            for (Future<Solution> futureNeighbor : evaluatedSolutions) {
-//                Solution neighbor = futureNeighbor.get();
-//                if (!neighbor.isFeasible)
-//                    continue;
-//                if (bestNeighbor == null || neighbor.totalDistance < bestNeighbor.totalDistance)
-//                    bestNeighbor = neighbor;
-//            }
-//
-//            if (bestNeighbor == null) {
-//                System.out.println("Couldn't move: no feasible neighbors!");
-//                return incumbentSolution;
-//            }
-//            return bestNeighbor;
-//        } catch (Exception e) {
-//            throw new RuntimeException(e);
-//        }
         Solution bestNeighbor = null;
         for (Solution neighbor : neighborhood) {
             if (!neighbor.isFeasible)
