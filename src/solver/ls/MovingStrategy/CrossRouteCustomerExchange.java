@@ -1,6 +1,7 @@
 package solver.ls.MovingStrategy;
 
 import solver.ls.Solution;
+import solver.ls.VRPLocalSearch;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,16 +13,16 @@ public class CrossRouteCustomerExchange implements MovingStrategy {
 
     private final Random random = new Random(200000000);
 
-    public List<Solution> getNeighborhood(Solution currentSolution) {
+    public List<Solution> getNeighborhood(Solution currentSolution, VRPLocalSearch instance) {
         final int NEIGHBORHOOD_SIZE = currentSolution.routes.size() / 2;
 
         List<Solution> neighborhood = new ArrayList<>();
         for (int i = 0; i < NEIGHBORHOOD_SIZE; i++)
-            neighborhood.add(getSingleNeighbor(currentSolution));
+            neighborhood.add(getSingleNeighbor(currentSolution, instance));
         return neighborhood;
     }
 
-    public Solution getSingleNeighbor(Solution currentSolution) {
+    public Solution getSingleNeighbor(Solution currentSolution, VRPLocalSearch instance) {
         int numVehicles = currentSolution.routes.size();
         final int NUM_TRIES = 5;
         List<Integer> emptyList = new ArrayList<>();
@@ -59,6 +60,21 @@ public class CrossRouteCustomerExchange implements MovingStrategy {
         // exchange the two customers
         newSolution.routes.get(customer1Route).set(route1CustomerIdx, route2Customer);
         newSolution.routes.get(customer2Route).set(route2CustomerIdx, route1Customer);
+
+        // run verification -- we only need to check that the two routes that were changed are still valid
+        List<Integer> newRoute1 = newSolution.routes.get(customer1Route);
+        List<Integer> newRoute2 = newSolution.routes.get(customer2Route);
+        newSolution.isFeasible = this.isRouteFeasible(newRoute1, instance) && this.isRouteFeasible(newRoute2, instance);
+        if (!newSolution.isFeasible) {
+            // no need to update total distance here -- we only consider feasible solutions so this will be discarded
+            return newSolution;
+        }
+
+        // compute new total distance -- we can compute this by seeing the change in distance for the two
+        // modified routes
+        List<Integer> oldRoute1 = currentSolution.routes.get(customer1Route);
+        List<Integer> oldRoute2 = currentSolution.routes.get(customer2Route);
+        newSolution.totalDistance += this.routeDistanceChange(oldRoute1, newRoute1, instance) + this.routeDistanceChange(oldRoute2, newRoute2, instance);
 
         return newSolution;
     }

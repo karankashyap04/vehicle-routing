@@ -10,10 +10,10 @@ public class VRPInstance {
     int numCustomers;                // the number of customers
     int numVehicles;            // the number of vehicles
     int vehicleCapacity;            // the capacity of the vehicles
-    int[] demandOfCustomer;        // the demand of each customer
+    public int[] demandOfCustomer;        // the demand of each customer
     double[] xCoordOfCustomer;    // the x coordinate of each customer
     double[] yCoordOfCustomer;    // the y coordinate of each customer
-    double[][] distance;        // distances between all customers (including warehouse)
+    public double[][] distance;        // distances between all customers (including warehouse)
 
     Timer watch;
 
@@ -51,6 +51,16 @@ public class VRPInstance {
             System.out.println(demandOfCustomer[i] + " " + xCoordOfCustomer[i] + " " + yCoordOfCustomer[i]);
 
         this.generateDistanceMatrix();
+
+        System.out.println("\n Matrix:\n");
+    }
+
+    public int getNumCustomers() {
+        return numCustomers;
+    }
+
+    public int getVehicleCapacity() {
+        return vehicleCapacity;
     }
 
     private double distance(double x1, double y1, double x2, double y2) {

@@ -41,7 +41,7 @@ public class Main {
 
         System.out.println("{\"Instance\": \"" + filename +
                 "\", \"Time\": " + String.format("%.2f", watch.getTime()) +
-                ", \"Result\": \"" + String.format("%.2f", totalDistance) + "\"" +
+                ", \"Result\": " + String.format("%.2f", totalDistance) +
                 ", \"Solution\": \"" + solution.getSolutionString() + "\"}");
     }
 }

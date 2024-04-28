@@ -23,9 +23,6 @@ public class VRPLocalSearch extends VRPInstance {
     final double TIMEOUT = 295.0; // stop running search after 295 seconds
 
     // reference: https://stackoverflow.com/questions/3269445/executorservice-how-to-wait-for-all-tasks-to-finish
-    final int NUM_THREADS = 10;
-    ExecutorService threadPool = Executors.newFixedThreadPool(NUM_THREADS);
-
     /*
      * if this flag is true, we get lists of moves from moving strategies.
      * if it is false, we get single moves from the moving strategies in singleMovingStrategies
@@ -42,8 +39,7 @@ public class VRPLocalSearch extends VRPInstance {
                 new TwoOpt(),
                 new CrossRouteCustomerMove(),
                 new RandomCustomerMovement(),
-                new CrossRouteCustomerExchange(),
-                new CrossRouteArcExchange()
+                new CrossRouteCustomerExchange()
         ));
 //        }
     }
@@ -171,7 +167,6 @@ public class VRPLocalSearch extends VRPInstance {
             }
         }
 
-        threadPool.shutdown();
         return incumbentSolution;
     }
 
@@ -188,39 +183,52 @@ public class VRPLocalSearch extends VRPInstance {
             for (MovingStrategy strategy : this.singleMovingStrategies) {
 //                neighborhood.addAll(strategy.getNeighborhood(currentSolution));
                 for (int i = 0; i < 10; i++)
-                    neighborhood.add(strategy.getSingleNeighbor(currentSolution));
+                    neighborhood.add(strategy.getSingleNeighbor(currentSolution, this));
             }
         } else {
 //            neighborhoodMoves = new ArrayList<>();
             for (MovingStrategy strategy : this.singleMovingStrategies) {
-                neighborhood.add(strategy.getSingleNeighbor(currentSolution));
+                neighborhood.add(strategy.getSingleNeighbor(currentSolution, this));
             }
         }
 
-        // evaluate solutions in neighborhood
-        List<Callable<Solution>> solutionEvaluationTasks = new ArrayList<>();
-        for (Solution candidateSolution : neighborhood) {
-            solutionEvaluationTasks.add(new SolutionEvaluationTask(candidateSolution, this));
+//        // evaluate solutions in neighborhood
+//        List<Callable<Solution>> solutionEvaluationTasks = new ArrayList<>();
+//        for (Solution candidateSolution : neighborhood) {
+//            solutionEvaluationTasks.add(new SolutionEvaluationTask(candidateSolution, this));
+//        }
+//        try {
+//            List<Future<Solution>> evaluatedSolutions = threadPool.invokeAll(solutionEvaluationTasks);
+//
+//            Solution bestNeighbor = null;
+//            for (Future<Solution> futureNeighbor : evaluatedSolutions) {
+//                Solution neighbor = futureNeighbor.get();
+//                if (!neighbor.isFeasible)
+//                    continue;
+//                if (bestNeighbor == null || neighbor.totalDistance < bestNeighbor.totalDistance)
+//                    bestNeighbor = neighbor;
+//            }
+//
+//            if (bestNeighbor == null) {
+//                System.out.println("Couldn't move: no feasible neighbors!");
+//                return incumbentSolution;
+//            }
+//            return bestNeighbor;
+//        } catch (Exception e) {
+//            throw new RuntimeException(e);
+//        }
+        Solution bestNeighbor = null;
+        for (Solution neighbor : neighborhood) {
+            if (!neighbor.isFeasible)
+                continue;
+            if (bestNeighbor == null || neighbor.totalDistance < bestNeighbor.totalDistance)
+                bestNeighbor = neighbor;
         }
-        try {
-            List<Future<Solution>> evaluatedSolutions = threadPool.invokeAll(solutionEvaluationTasks);
 
-            Solution bestNeighbor = null;
-            for (Future<Solution> futureNeighbor : evaluatedSolutions) {
-                Solution neighbor = futureNeighbor.get();
-                if (!neighbor.isFeasible)
-                    continue;
-                if (bestNeighbor == null || neighbor.totalDistance < bestNeighbor.totalDistance)
-                    bestNeighbor = neighbor;
-            }
-
-            if (bestNeighbor == null) {
-                System.out.println("Couldn't move: no feasible neighbors!");
-                return incumbentSolution;
-            }
-            return bestNeighbor;
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+        if (bestNeighbor == null) {
+            System.out.println("Couldn't move: no feasible neighbors!");
+            return incumbentSolution;
         }
+        return bestNeighbor;
     }
 }

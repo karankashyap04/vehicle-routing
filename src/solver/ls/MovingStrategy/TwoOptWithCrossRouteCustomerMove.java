@@ -1,6 +1,7 @@
 package solver.ls.MovingStrategy;
 
 import solver.ls.Solution;
+import solver.ls.VRPLocalSearch;
 
 import java.util.List;
 
@@ -16,29 +17,29 @@ public class TwoOptWithCrossRouteCustomerMove implements MovingStrategy {
         this.twoOpt = new TwoOpt();
     }
 
-    public List<Solution> getNeighborhood(Solution currentSolution) {
+    public List<Solution> getNeighborhood(Solution currentSolution, VRPLocalSearch instance) {
         if (countSinceLastCrossMove < TWO_OPT_BETWEEN_CROSS_MOVE_COUNT) {
             // do a two-opt
             countSinceLastCrossMove++;
-            return twoOpt.getNeighborhood(currentSolution);
+            return twoOpt.getNeighborhood(currentSolution, instance);
         }
         else {
             // do cross route move
             countSinceLastCrossMove = 0;
-            return crossRouteCustomerMove.getNeighborhood(currentSolution);
+            return crossRouteCustomerMove.getNeighborhood(currentSolution, instance);
         }
     }
 
-    public Solution getSingleNeighbor(Solution currentSolution) {
+    public Solution getSingleNeighbor(Solution currentSolution, VRPLocalSearch instance) {
         if (countSinceLastCrossMove < TWO_OPT_BETWEEN_CROSS_MOVE_COUNT) {
             // do a two-opt
             countSinceLastCrossMove++;
-            return twoOpt.getSingleNeighbor(currentSolution);
+            return twoOpt.getSingleNeighbor(currentSolution, instance);
         }
         else {
             // do cross route move
             countSinceLastCrossMove = 0;
-            return crossRouteCustomerMove.getSingleNeighbor(currentSolution);
+            return crossRouteCustomerMove.getSingleNeighbor(currentSolution, instance);
         }
     }
 }
