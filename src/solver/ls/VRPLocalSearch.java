@@ -118,7 +118,7 @@ public class VRPLocalSearch extends VRPInstance {
         solutionTotalDistance(currentSolution); // compute solution total distance (stored in totalDistance field)
         System.out.println("initial solution: " + currentSolution.totalDistance);
 
-        Random random = new Random(100000000);
+//        Random random = new Random(100000000);
         double tolerance = Math.pow(10, Math.min(3, Double.toString(incumbentSolution.totalDistance).length() - 1));
 //        int restartsSinceNewIncumbent = 0;
 
@@ -132,6 +132,12 @@ public class VRPLocalSearch extends VRPInstance {
                 lastIncumbentUpdateTime = watch.getTime();
                 tolerance = Math.max(tolerance / 2, 0.5);
                 System.out.println("tolerance after restart: " + tolerance);
+                this.singleMovingStrategies = new ArrayList<>(List.of(
+                        new TwoOpt(),
+                        new CrossRouteCustomerMove(),
+                        new RandomCustomerMovement(),
+                        new CrossRouteCustomerExchange()
+                ));
 //                restartsSinceNewIncumbent++;
             }
 
