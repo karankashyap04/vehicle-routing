@@ -11,7 +11,7 @@ import java.util.Random;
 // For the whole neighborhood, this repeats the process above numVehicles/2 times
 public class CrossRouteCustomerExchange implements MovingStrategy {
 
-    private final Random random = new Random(200000000);
+    private final Random random = new Random(250);
 
     public List<Solution> getNeighborhood(Solution currentSolution, VRPLocalSearch instance) {
         final int NEIGHBORHOOD_SIZE = currentSolution.routes.size() / 2;

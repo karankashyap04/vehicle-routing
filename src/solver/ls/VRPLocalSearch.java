@@ -19,10 +19,8 @@ public class VRPLocalSearch extends VRPInstance {
     private double lastIncumbentUpdateTime = 0.0;
     private double INCUMBENT_UPDATE_TIMEOUT = 10.0; // 10 seconds
 
-    MovingStrategy movingStrategy;
     final double TIMEOUT = 295.0; // stop running search after 295 seconds
 
-    // reference: https://stackoverflow.com/questions/3269445/executorservice-how-to-wait-for-all-tasks-to-finish
     /*
      * if this flag is true, we get lists of moves from moving strategies.
      * if it is false, we get single moves from the moving strategies in singleMovingStrategies
@@ -31,17 +29,14 @@ public class VRPLocalSearch extends VRPInstance {
 
     private List<MovingStrategy> singleMovingStrategies;
 
-    public VRPLocalSearch(String filename, MovingStrategy movingStrategy, Timer watch) {
+    public VRPLocalSearch(String filename, Timer watch) {
         super(filename, watch);
-        this.movingStrategy = movingStrategy;
-//        if (!MULTIPLE_MOVES_NEIGHBORHOOD) {
         this.singleMovingStrategies = new ArrayList<>(List.of(
                 new TwoOpt(),
                 new CrossRouteCustomerMove(),
                 new RandomCustomerMovement(),
                 new CrossRouteCustomerExchange()
         ));
-//        }
     }
 
     private Solution constructSolutionFromCPVars() {
@@ -116,38 +111,30 @@ public class VRPLocalSearch extends VRPInstance {
         }
 
         solutionTotalDistance(currentSolution); // compute solution total distance (stored in totalDistance field)
-        System.out.println("initial solution: " + currentSolution.totalDistance);
 
-//        Random random = new Random(100000000);
         double tolerance = Math.pow(10, Math.min(3, Double.toString(incumbentSolution.totalDistance).length() - 1));
-//        int restartsSinceNewIncumbent = 0;
 
         // start moving around
         while (watch.getTime() < TIMEOUT) {
             if (tolerance < 10)
                 MULTIPLE_MOVES_NEIGHBORHOOD = true;
             if (watch.getTime() - lastIncumbentUpdateTime >= INCUMBENT_UPDATE_TIMEOUT) {
-                System.out.println("RESTART!!!!!!!!!!!!!!!!!!!!!!!!!");
                 currentSolution = incumbentSolution;
                 lastIncumbentUpdateTime = watch.getTime();
                 tolerance = Math.max(tolerance / 2, 0.5);
-                System.out.println("tolerance after restart: " + tolerance);
                 this.singleMovingStrategies = new ArrayList<>(List.of(
                         new TwoOpt(),
                         new CrossRouteCustomerMove(),
                         new RandomCustomerMovement(),
                         new CrossRouteCustomerExchange()
                 ));
-//                restartsSinceNewIncumbent++;
             }
 
             Solution newSolution = move(currentSolution);
             if (newSolution.isFeasible && newSolution.totalDistance < currentSolution.totalDistance + tolerance) {
                 if (newSolution.totalDistance < incumbentSolution.totalDistance) {
                     incumbentSolution = newSolution;
-                    System.out.println("new incumbent (2): " + incumbentSolution.totalDistance);
                     lastIncumbentUpdateTime = watch.getTime();
-//                    restartsSinceNewIncumbent = 0;
                 }
                 currentSolution = newSolution;
             }
@@ -165,14 +152,11 @@ public class VRPLocalSearch extends VRPInstance {
 
         if (MULTIPLE_MOVES_NEIGHBORHOOD) {
             // based on moving strategy, get neighborhood
-//            neighborhoodMoves = this.movingStrategy.getNeighborhoodMoves(currentSolution);
             for (MovingStrategy strategy : this.singleMovingStrategies) {
-//                neighborhood.addAll(strategy.getNeighborhood(currentSolution));
                 for (int i = 0; i < 10; i++)
                     neighborhood.add(strategy.getSingleNeighbor(currentSolution, this));
             }
         } else {
-//            neighborhoodMoves = new ArrayList<>();
             for (MovingStrategy strategy : this.singleMovingStrategies) {
                 neighborhood.add(strategy.getSingleNeighbor(currentSolution, this));
             }

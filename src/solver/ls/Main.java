@@ -1,6 +1,5 @@
 package solver.ls;
 
-import solver.ls.MovingStrategy.MovingStrategy;
 import solver.ls.MovingStrategy.RandomCustomerMovement;
 import solver.ls.MovingStrategy.TwoOptWithCrossRouteCustomerMove;
 
@@ -21,11 +20,8 @@ public class Main {
 
         Timer watch = new Timer();
         watch.start();
-//        VRPInstance instance = new VRPInstance(input);
-//        VRPGoogleSolver solver = new VRPGoogleSolver(input);
 
-        MovingStrategy movingStrategy = new RandomCustomerMovement();
-        VRPLocalSearch solver = new VRPLocalSearch(input, movingStrategy, watch);
+        VRPLocalSearch solver = new VRPLocalSearch(input, watch);
         Solution solution = solver.localSearch();
         watch.stop();
 
@@ -36,8 +32,6 @@ public class Main {
             System.out.println();
         }
         double totalDistance = solver.solutionTotalDistance(solution);
-
-        // TODO: fix rounding for distance in result (round to 2dp)
 
         System.out.println("{\"Instance\": \"" + filename +
                 "\", \"Time\": " + String.format("%.2f", watch.getTime()) +

@@ -17,7 +17,7 @@ public class TwoOpt implements MovingStrategy {
     // might become: 0 -> 5 -> 1 -> 3 -> 2 -> 4 -> 6 -> 0 (if we remove the cross along the arc 2 -> 3)
     // (2 and 3 here are randomly picked)
 
-    private final Random random = new Random(500000000);
+    private final Random random = new Random(550);
 
     private int pickCustomerFromRoute(List<Integer> route) {
         // add 1 to result to prevent picking customer at index 0 (avoid depot)
