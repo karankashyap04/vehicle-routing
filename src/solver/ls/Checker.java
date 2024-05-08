@@ -85,7 +85,7 @@ public class Checker {
 
     public static void main(String[] args) throws Exception {
         // read results.log
-        String resultsPath = "resultsNoMultithreading.log";
+        String resultsPath = "results.log";
         BufferedReader reader = new BufferedReader(new FileReader(resultsPath));
 
         String line = reader.readLine();
@@ -129,6 +129,7 @@ public class Checker {
             VRPInstance instance = new VRPInstance(filename, watch);
 
             check(instance, solution, computedDistance);
+            System.out.println("Successful");
 
             line = reader.readLine();
         }

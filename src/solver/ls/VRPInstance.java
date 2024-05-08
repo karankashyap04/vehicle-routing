@@ -47,12 +47,7 @@ public class VRPInstance {
             yCoordOfCustomer[i] = read.nextDouble();
         }
 
-        for (int i = 0; i < numCustomers; i++)
-            System.out.println(demandOfCustomer[i] + " " + xCoordOfCustomer[i] + " " + yCoordOfCustomer[i]);
-
         this.generateDistanceMatrix();
-
-        System.out.println("\n Matrix:\n");
     }
 
     public int getNumCustomers() {
