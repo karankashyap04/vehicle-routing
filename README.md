@@ -12,6 +12,8 @@ A simulated-annealing based local search algorithm for solving the NP-complete C
 
 For information on how we built our CVRP solver, optimizations we made, and more, look through our [presentation](https://github.com/karankashyap04/vehicle-routing/blob/main/presentation.pdf)!
 
+All the code for our solver is within the [src/solver/ls/](https://github.com/karankashyap04/vehicle-routing/tree/main/src/solver/ls) subdirectory.
+
 ## Results
 
 While there is certainly further work that could be done to improve our solver, we were quite happy with the results we achieved. For reference, our solver outperformed Google OR-Tools' CVRP solver on all instances in the `input/` directory after running for 5 minutes.
