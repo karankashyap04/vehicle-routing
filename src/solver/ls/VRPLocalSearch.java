@@ -7,8 +7,6 @@ import solver.ls.MovingStrategy.*;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
-import java.util.concurrent.*;
 
 public class VRPLocalSearch extends VRPInstance {
 
@@ -25,7 +23,7 @@ public class VRPLocalSearch extends VRPInstance {
      * if this flag is true, we get lists of moves from moving strategies.
      * if it is false, we get single moves from the moving strategies in singleMovingStrategies
      */
-    private boolean MULTIPLE_MOVES_NEIGHBORHOOD = false;
+    private boolean multipleMovesNeighborhood = false;
 
     private List<MovingStrategy> singleMovingStrategies;
 
@@ -117,7 +115,7 @@ public class VRPLocalSearch extends VRPInstance {
         // start moving around
         while (watch.getTime() < TIMEOUT) {
             if (tolerance < 10)
-                MULTIPLE_MOVES_NEIGHBORHOOD = true;
+                multipleMovesNeighborhood = true;
             if (watch.getTime() - lastIncumbentUpdateTime >= INCUMBENT_UPDATE_TIMEOUT) {
                 currentSolution = incumbentSolution;
                 lastIncumbentUpdateTime = watch.getTime();
@@ -150,11 +148,10 @@ public class VRPLocalSearch extends VRPInstance {
     private Solution move(Solution currentSolution) {
         List<Solution> neighborhood = new ArrayList<>();
 
-        if (MULTIPLE_MOVES_NEIGHBORHOOD) {
+        if (multipleMovesNeighborhood) {
             // based on moving strategy, get neighborhood
             for (MovingStrategy strategy : this.singleMovingStrategies) {
-                for (int i = 0; i < 10; i++)
-                    neighborhood.add(strategy.getSingleNeighbor(currentSolution, this));
+                neighborhood.addAll(strategy.getNeighborhood(currentSolution, this, 10));
             }
         } else {
             for (MovingStrategy strategy : this.singleMovingStrategies) {

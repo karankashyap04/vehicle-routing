@@ -28,35 +28,6 @@ public class CrossRouteCustomerMove implements MovingStrategy {
         return 1 + random.nextInt(currentSolution.routes.get(vehicleIdx).size() - 2);
     }
 
-    public List<Solution> getNeighborhood(Solution currentSolution, VRPLocalSearch instance) {
-        // TODO: this needs to be fixed (wasn't fixed while removing multithreading)
-//        // pick a random customer to move
-//        int sourceRouteIdx = pickRandomVehicle(currentSolution);
-//        if (currentSolution.routes.get(sourceRouteIdx).size() <= 2)
-//            return new ArrayList<>();
-//        int customerSourceIdx = pickRandomCustomerFromVehicleRoute(currentSolution, sourceRouteIdx);
-//        int customer = currentSolution.routes.get(sourceRouteIdx).get(customerSourceIdx);
-//
-//        List<Solution> neighborhood = new ArrayList<>();
-//
-//        // get neighbors by moving customer to other routes (in same position in route, if possible)
-//        for (int newRouteIdx = 0; newRouteIdx < currentSolution.routes.size(); newRouteIdx++) {
-//            if (newRouteIdx == sourceRouteIdx)
-//                continue;
-//
-//            List<Integer> destinationRoute = currentSolution.routes.get(newRouteIdx);
-//            int customerDestinationIdx = 1 + random.nextInt(destinationRoute.size() - 1);
-//
-//            Solution newSolution = currentSolution.copy();
-//            newSolution.routes.get(newRouteIdx).add(customerDestinationIdx, customer);
-//            newSolution.routes.get(sourceRouteIdx).remove(customerSourceIdx);
-//            neighborhood.add(newSolution);
-//        }
-//
-//        return neighborhood;
-        return new ArrayList<>();
-    }
-
     /**
      * Picks a random customer, and moves them to a random position in a random (different) route
      *

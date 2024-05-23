@@ -13,15 +13,6 @@ public class CrossRouteCustomerExchange implements MovingStrategy {
 
     private final Random random = new Random(250);
 
-    public List<Solution> getNeighborhood(Solution currentSolution, VRPLocalSearch instance) {
-        final int NEIGHBORHOOD_SIZE = currentSolution.routes.size() / 2;
-
-        List<Solution> neighborhood = new ArrayList<>();
-        for (int i = 0; i < NEIGHBORHOOD_SIZE; i++)
-            neighborhood.add(getSingleNeighbor(currentSolution, instance));
-        return neighborhood;
-    }
-
     public Solution getSingleNeighbor(Solution currentSolution, VRPLocalSearch instance) {
         int numVehicles = currentSolution.routes.size();
         final int NUM_TRIES = 5;

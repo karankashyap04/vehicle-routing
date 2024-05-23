@@ -53,19 +53,6 @@ public class TwoOpt implements MovingStrategy {
         return newSolution;
     }
 
-    public List<Solution> getNeighborhood(Solution currentSolution, VRPLocalSearch instance) {
-        // TODO: this needs to be fixed (wasn't fixed while removing multithreading)
-//        // run two-opt once on each route
-//        List<Solution> neighborhood = new ArrayList<>();
-//        for (int i = 0; i < currentSolution.routes.size(); i++) {
-//            if (currentSolution.routes.get(i).size() < 4)
-//                continue;
-//            neighborhood.add(performTwoOpt(currentSolution, i));
-//        }
-//        return neighborhood;
-        return new ArrayList<>();
-    }
-
     /**
      * Picks a random route, and performs a random two-opt swap within it
      *
